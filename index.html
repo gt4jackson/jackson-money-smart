@@ -550,8 +550,8 @@ button { cursor:pointer; font-family:inherit; }
 // ═══════════════════════════════════════════════════
 
 const DEFAULT_PROFILES = [
-  { id:'kid1', name:'Kid 1', age:12, emoji:'🧑' },
-  { id:'kid2', name:'Kid 2', age:9, emoji:'👦' }
+  { id:'kid1', name:'Nellie', age:12, emoji:'👧' },
+  { id:'kid2', name:'GT', age:9, emoji:'🧑' }
 ];
 
 let state = {
@@ -568,6 +568,15 @@ function loadState() {
     if (s) {
       const parsed = JSON.parse(s);
       state = { ...state, ...parsed };
+      // Migrate old default names to real names
+      state.profiles.forEach(p => {
+        const def = DEFAULT_PROFILES.find(d => d.id === p.id);
+        if (def && (p.name === 'Kid 1' || p.name === 'Kid 2')) {
+          p.name = def.name;
+          p.age = def.age;
+          p.emoji = def.emoji;
+        }
+      });
     }
   } catch(e) {}
 }
@@ -1691,12 +1700,24 @@ function renderSettings() {
 
 function updateProfileName(id, name) {
   const p = getProfile(id);
-  if (p) { p.name = name; saveState(); }
+  if (p) {
+    p.name = name;
+    saveState();
+    syncToSheets();
+    // Update header chip if this is the current profile
+    if (state.currentProfile === id) {
+      document.getElementById('userChip').textContent = p.emoji + ' ' + p.name;
+    }
+  }
 }
 
 function updateProfileAge(id, age) {
   const p = getProfile(id);
-  if (p) { p.age = parseInt(age) || 9; saveState(); }
+  if (p) {
+    p.age = parseInt(age) || 9;
+    saveState();
+    syncToSheets();
+  }
 }
 
 function saveSyncUrl() {
