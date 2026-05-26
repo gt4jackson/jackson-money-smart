@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#10b981">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23064e3b'/><text x='256' y='340' font-size='260' text-anchor='middle'>💰</text></svg>">
+<title>Money Smart — Jackson Family</title>
+<style>
+:root {
+  --bg: #0c1222;
+  --surface: #151d30;
+  --card: #1a2540;
+  --accent: #10b981;
+  --accent-light: #34d399;
+  --accent-glow: rgba(16,185,129,0.15);
+  --gold: #f59e0b;
+  --gold-light: #fbbf24;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
+  --red: #ef4444;
+  --text: #e8edf5;
+  --text-dim: #7b8ba5;
+  --border: rgba(255,255,255,0.07);
+  --radius: 14px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100dvh;
+  padding-top: var(--safe-top);
+  padding-bottom: calc(72px + var(--safe-bottom));
+  overflow-x: hidden;
+}
+button { cursor:pointer; font-family:inherit; }
+
+/* ── Screens ── */
+.screen { display:none; padding:16px; max-width:600px; margin:0 auto; }
+.screen.active { display:block; }
+
+/* ── Profile Selection ── */
+.profile-screen {
+  position:fixed; inset:0; z-index:500; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:40px 24px; text-align:center;
+}
+.profile-screen.hidden { display:none; }
+.profile-icon { font-size:4rem; margin-bottom:12px; }
+.profile-screen h1 { font-size:1.7rem; font-weight:800; margin-bottom:4px; }
+.profile-screen h1 span { color:var(--accent); }
+.profile-subtitle { color:var(--text-dim); font-size:0.95rem; margin-bottom:32px; }
+.profile-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  width:100%; max-width:340px; margin-bottom:20px;
+}
+.profile-btn {
+  padding:18px 12px; border-radius:var(--radius);
+  background:var(--surface); border:2px solid var(--border);
+  color:var(--text); font-size:1.05rem; font-weight:600;
+  transition:0.2s; display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.profile-btn:hover,.profile-btn:active { border-color:var(--accent); background:var(--accent-glow); }
+.profile-btn .avatar {
+  width:52px; height:52px; border-radius:50%; background:var(--card);
+  display:flex; align-items:center; justify-content:center; font-size:1.5rem;
+}
+.profile-btn .age-tag { font-size:0.75rem; color:var(--text-dim); }
+.parent-btn {
+  grid-column:1/-1; padding:14px; border-radius:var(--radius);
+  background:var(--card); border:2px solid var(--border);
+  color:var(--gold); font-size:0.95rem; font-weight:600;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:0.2s;
+}
+.parent-btn:hover { border-color:var(--gold); background:rgba(245,158,11,0.1); }
+
+/* ── Header ── */
+.header {
+  position:sticky; top:0; z-index:100; background:var(--surface);
+  border-bottom:1px solid var(--border); padding:14px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.header h1 { font-size:1.15rem; font-weight:700; }
+.header h1 span { color:var(--accent); }
+.header-right { display:flex; gap:8px; align-items:center; }
+.user-chip {
+  font-size:0.78rem; color:var(--accent-light); padding:4px 10px;
+  border-radius:12px; background:var(--accent-glow); cursor:pointer; border:none;
+}
+.icon-btn {
+  width:36px; height:36px; border-radius:50%; background:var(--card);
+  border:1px solid var(--border); color:var(--text); font-size:1rem;
+  display:flex; align-items:center; justify-content:center; transition:0.15s;
+}
+.icon-btn:active { transform:scale(0.92); }
+
+/* ── Bottom Nav ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0; z-index:100;
+  background:var(--surface); border-top:1px solid var(--border);
+  display:flex; padding-bottom:var(--safe-bottom);
+}
+.nav-btn {
+  flex:1; padding:10px 0 8px; background:none; border:none;
+  color:var(--text-dim); font-size:0.68rem; font-weight:600;
+  display:flex; flex-direction:column; align-items:center; gap:3px; transition:0.15s;
+}
+.nav-btn .nav-icon { font-size:1.25rem; }
+.nav-btn.active { color:var(--accent); }
+
+/* ── Dashboard ── */
+.greeting { font-size:1.4rem; font-weight:700; margin-bottom:4px; }
+.streak-bar {
+  display:flex; align-items:center; gap:8px; padding:10px 14px;
+  background:var(--surface); border-radius:var(--radius); margin:12px 0 18px;
+  border:1px solid var(--border);
+}
+.streak-num { font-size:1.5rem; font-weight:800; color:var(--gold); }
+.streak-label { font-size:0.85rem; color:var(--text-dim); }
+.streak-fire { font-size:1.3rem; }
+.section-title { font-size:1rem; font-weight:700; margin:18px 0 10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; font-size:0.75rem; }
+.progress-ring {
+  display:flex; gap:12px; overflow-x:auto; padding-bottom:8px;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.progress-ring::-webkit-scrollbar { display:none; }
+.ring-card {
+  min-width:120px; padding:14px; border-radius:var(--radius);
+  background:var(--surface); border:1px solid var(--border);
+  text-align:center; flex-shrink:0;
+}
+.ring-card .ring-emoji { font-size:1.6rem; margin-bottom:6px; }
+.ring-card .ring-label { font-size:0.78rem; color:var(--text-dim); margin-bottom:4px; }
+.ring-card .ring-pct { font-size:1.1rem; font-weight:700; color:var(--accent); }
+
+/* ── Lesson Cards ── */
+.lesson-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; margin-bottom:12px;
+  cursor:pointer; transition:0.15s;
+}
+.lesson-card:active { transform:scale(0.98); }
+.lesson-card.locked { opacity:0.5; pointer-events:none; }
+.lesson-header { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.lesson-emoji { font-size:1.5rem; }
+.lesson-title { font-size:1rem; font-weight:600; flex:1; }
+.lesson-badge {
+  font-size:0.7rem; padding:3px 8px; border-radius:8px; font-weight:600;
+}
+.badge-new { background:var(--accent-glow); color:var(--accent); }
+.badge-done { background:rgba(245,158,11,0.15); color:var(--gold); }
+.badge-locked { background:rgba(255,255,255,0.05); color:var(--text-dim); }
+.lesson-desc { font-size:0.85rem; color:var(--text-dim); }
+.lesson-progress-bar {
+  height:4px; background:var(--card); border-radius:2px; margin-top:10px; overflow:hidden;
+}
+.lesson-progress-fill { height:100%; background:var(--accent); border-radius:2px; transition:0.3s; }
+
+/* ── Lesson Viewer ── */
+.lesson-viewer { padding:16px; }
+.lesson-back {
+  background:none; border:none; color:var(--accent); font-size:0.9rem;
+  font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:4px;
+}
+.lesson-content h2 { font-size:1.3rem; font-weight:700; margin-bottom:14px; }
+.lesson-content h3 { font-size:1.05rem; font-weight:600; margin:16px 0 8px; color:var(--accent-light); }
+.lesson-content p { font-size:0.92rem; line-height:1.6; margin-bottom:12px; color:var(--text); }
+.lesson-content .callout {
+  background:var(--accent-glow); border-left:3px solid var(--accent);
+  padding:12px 14px; border-radius:0 var(--radius) var(--radius) 0;
+  margin:14px 0; font-size:0.88rem;
+}
+.lesson-content .example-box {
+  background:var(--card); border:1px solid var(--border);
+  padding:14px; border-radius:var(--radius); margin:12px 0;
+}
+.lesson-content .example-box .label { font-size:0.75rem; color:var(--gold); font-weight:700; text-transform:uppercase; margin-bottom:6px; }
+
+/* ── Quiz ── */
+.quiz-section { margin-top:20px; }
+.quiz-question { font-size:1rem; font-weight:600; margin-bottom:12px; }
+.quiz-options { display:flex; flex-direction:column; gap:8px; }
+.quiz-opt {
+  padding:12px 14px; border-radius:var(--radius); background:var(--card);
+  border:2px solid var(--border); color:var(--text); font-size:0.9rem;
+  text-align:left; transition:0.15s; font-weight:500;
+}
+.quiz-opt:hover { border-color:var(--accent); }
+.quiz-opt.correct { border-color:#10b981; background:rgba(16,185,129,0.15); }
+.quiz-opt.wrong { border-color:var(--red); background:rgba(239,68,68,0.1); }
+.quiz-opt.disabled { pointer-events:none; }
+.quiz-feedback {
+  margin-top:12px; padding:12px; border-radius:var(--radius);
+  font-size:0.9rem; font-weight:500;
+}
+.quiz-feedback.correct-fb { background:rgba(16,185,129,0.12); color:var(--accent-light); }
+.quiz-feedback.wrong-fb { background:rgba(239,68,68,0.1); color:#fca5a5; }
+.quiz-nav { display:flex; gap:10px; margin-top:16px; }
+.quiz-nav button {
+  flex:1; padding:12px; border-radius:var(--radius); border:none;
+  font-size:0.95rem; font-weight:600; transition:0.15s;
+}
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:active { transform:scale(0.97); }
+.btn-secondary { background:var(--card); color:var(--text); border:1px solid var(--border); }
+
+/* ── Activities ── */
+.activity-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; margin-bottom:12px;
+  cursor:pointer; transition:0.15s;
+}
+.activity-card:active { transform:scale(0.98); }
+.activity-header { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.activity-emoji { font-size:1.5rem; }
+.activity-title { font-size:1rem; font-weight:600; flex:1; }
+.activity-desc { font-size:0.85rem; color:var(--text-dim); }
+
+/* ── Budget Challenge ── */
+.budget-game { padding:0; }
+.budget-status {
+  display:flex; justify-content:space-between; background:var(--surface);
+  padding:14px; border-radius:var(--radius); margin-bottom:14px;
+  border:1px solid var(--border);
+}
+.budget-stat { text-align:center; }
+.budget-stat .label { font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; }
+.budget-stat .value { font-size:1.2rem; font-weight:700; }
+.budget-stat .value.money { color:var(--accent); }
+.budget-item {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px; margin-bottom:10px;
+}
+.budget-item-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.budget-item-name { font-weight:600; }
+.budget-item-cost { color:var(--gold); font-weight:700; }
+.budget-item-type { font-size:0.78rem; color:var(--text-dim); margin-bottom:8px; }
+.budget-item-actions { display:flex; gap:8px; }
+.budget-buy, .budget-skip {
+  flex:1; padding:8px; border-radius:10px; border:none;
+  font-size:0.85rem; font-weight:600;
+}
+.budget-buy { background:var(--accent); color:#fff; }
+.budget-skip { background:var(--card); color:var(--text-dim); }
+.budget-result {
+  text-align:center; padding:24px; background:var(--surface);
+  border-radius:var(--radius); border:1px solid var(--border);
+}
+.budget-result .result-emoji { font-size:3rem; margin-bottom:10px; }
+.budget-result h3 { font-size:1.2rem; margin-bottom:8px; }
+.budget-result p { color:var(--text-dim); font-size:0.9rem; margin-bottom:4px; }
+
+/* ── Stock Simulator ── */
+.stock-sim {}
+.portfolio-summary {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  margin-bottom:14px;
+}
+.port-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:12px; text-align:center;
+}
+.port-card .label { font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; }
+.port-card .value { font-size:1.15rem; font-weight:700; margin-top:2px; }
+.stock-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px; margin-bottom:10px;
+}
+.stock-top { display:flex; justify-content:space-between; align-items:center; }
+.stock-name { font-weight:600; }
+.stock-ticker { font-size:0.8rem; color:var(--text-dim); }
+.stock-price { font-size:1.1rem; font-weight:700; }
+.stock-change { font-size:0.82rem; font-weight:600; }
+.stock-change.up { color:var(--accent); }
+.stock-change.down { color:var(--red); }
+.stock-desc { font-size:0.82rem; color:var(--text-dim); margin:6px 0 10px; }
+.stock-actions { display:flex; gap:8px; align-items:center; }
+.stock-qty {
+  width:50px; padding:6px; border-radius:8px; border:1px solid var(--border);
+  background:var(--card); color:var(--text); text-align:center; font-size:0.9rem;
+}
+.stock-buy-btn, .stock-sell-btn {
+  padding:7px 14px; border-radius:8px; border:none; font-size:0.82rem; font-weight:600;
+}
+.stock-buy-btn { background:var(--accent); color:#fff; }
+.stock-sell-btn { background:var(--card); color:var(--text-dim); border:1px solid var(--border); }
+.stock-owned { font-size:0.8rem; color:var(--text-dim); margin-top:6px; }
+.advance-btn {
+  width:100%; padding:14px; border-radius:var(--radius); border:none;
+  background:var(--blue); color:#fff; font-size:1rem; font-weight:600;
+  margin-top:12px;
+}
+
+/* ── Savings Goal ── */
+.savings-goal {}
+.goal-setup { text-align:center; }
+.goal-input-group { margin:14px 0; }
+.goal-input-group label { display:block; font-size:0.85rem; color:var(--text-dim); margin-bottom:4px; }
+.goal-input {
+  width:100%; padding:12px; border-radius:var(--radius); border:1px solid var(--border);
+  background:var(--card); color:var(--text); font-size:1rem; text-align:center;
+}
+.goal-visual { text-align:center; margin:20px 0; }
+.goal-jar {
+  width:120px; height:180px; margin:0 auto; position:relative;
+  border:3px solid var(--accent); border-radius:0 0 20px 20px;
+  overflow:hidden; background:var(--card);
+}
+.goal-jar-fill {
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(to top, var(--accent), var(--accent-light));
+  transition:height 0.5s ease;
+}
+.goal-jar-label {
+  position:absolute; inset:0; display:flex; align-items:center;
+  justify-content:center; font-weight:700; font-size:1.1rem; z-index:1;
+}
+.goal-amount-display { font-size:1.3rem; font-weight:700; margin:10px 0; }
+.goal-add-group { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+.goal-add-btn {
+  padding:10px 18px; border-radius:var(--radius); border:1px solid var(--border);
+  background:var(--surface); color:var(--text); font-size:0.9rem; font-weight:600;
+}
+.goal-add-btn:active { background:var(--accent-glow); }
+
+/* ── Parent View ── */
+.parent-header { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.parent-header h2 { font-size:1.2rem; font-weight:700; }
+.kid-tab-bar { display:flex; gap:8px; margin-bottom:16px; }
+.kid-tab {
+  flex:1; padding:10px; border-radius:var(--radius); border:1px solid var(--border);
+  background:var(--surface); color:var(--text-dim); font-weight:600;
+  font-size:0.9rem; text-align:center;
+}
+.kid-tab.active { border-color:var(--accent); color:var(--accent); background:var(--accent-glow); }
+.parent-stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.parent-stat {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px; text-align:center;
+}
+.parent-stat .stat-value { font-size:1.5rem; font-weight:800; color:var(--accent); }
+.parent-stat .stat-label { font-size:0.78rem; color:var(--text-dim); margin-top:2px; }
+.discussion-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px; margin-bottom:10px;
+}
+.discussion-card .disc-topic { font-weight:600; margin-bottom:4px; }
+.discussion-card .disc-prompt { font-size:0.88rem; color:var(--text-dim); line-height:1.5; }
+.discussion-card .disc-age { font-size:0.72rem; color:var(--purple); margin-top:6px; }
+
+/* ── Settings ── */
+.settings-section { margin-bottom:20px; }
+.settings-section h3 { font-size:0.95rem; font-weight:600; margin-bottom:10px; }
+.setting-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 14px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); margin-bottom:8px;
+}
+.setting-label { font-size:0.9rem; }
+.setting-input {
+  width:60%; padding:8px; border-radius:8px; border:1px solid var(--border);
+  background:var(--card); color:var(--text); font-size:0.9rem;
+}
+.sync-status { font-size:0.8rem; color:var(--text-dim); margin-top:4px; }
+.save-settings-btn {
+  width:100%; padding:12px; border-radius:var(--radius); border:none;
+  background:var(--accent); color:#fff; font-size:0.95rem; font-weight:600;
+  margin-top:12px;
+}
+
+/* ── Modal ── */
+.modal-overlay {
+  position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.6);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.hidden { display:none; }
+.modal-box {
+  background:var(--surface); border-radius:var(--radius); padding:24px;
+  max-width:380px; width:100%; text-align:center;
+}
+.modal-box h3 { font-size:1.1rem; margin-bottom:8px; }
+.modal-box p { font-size:0.9rem; color:var(--text-dim); margin-bottom:16px; }
+.modal-box button { padding:10px 24px; border-radius:var(--radius); border:none; font-size:0.9rem; font-weight:600; }
+
+/* ── Toast ── */
+.toast {
+  position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+  background:var(--accent); color:#fff; padding:10px 20px;
+  border-radius:20px; font-size:0.85rem; font-weight:600;
+  z-index:400; opacity:0; transition:opacity 0.3s;
+}
+.toast.show { opacity:1; }
+
+/* ── Coin animation ── */
+@keyframes coinPop {
+  0% { transform:scale(0) rotate(0); opacity:1; }
+  50% { transform:scale(1.3) rotate(180deg); opacity:1; }
+  100% { transform:scale(0) rotate(360deg) translateY(-40px); opacity:0; }
+}
+.coin-anim {
+  position:fixed; font-size:2rem; pointer-events:none; z-index:999;
+  animation:coinPop 0.7s ease forwards;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-thumb { background:var(--accent); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Profile Selection ═══ -->
+<div id="profileScreen" class="profile-screen">
+  <div class="profile-icon">💰</div>
+  <h1>Money <span>Smart</span></h1>
+  <p class="profile-subtitle">Learn to earn, save, and grow your money!</p>
+  <p style="font-weight:600; margin-bottom:14px;">Who's learning today?</p>
+  <div class="profile-grid" id="profileGrid"></div>
+  <button class="parent-btn" onclick="enterParentMode()">
+    👨‍👧‍👦 Parent Dashboard
+  </button>
+</div>
+
+<!-- ═══ Header ═══ -->
+<div class="header" id="mainHeader" style="display:none">
+  <h1>💰 Money <span>Smart</span></h1>
+  <div class="header-right">
+    <button class="user-chip" id="userChip" onclick="switchProfile()"></button>
+    <button class="icon-btn" onclick="showScreen('settings')">⚙️</button>
+  </div>
+</div>
+
+<!-- ═══ Dashboard ═══ -->
+<div id="dashboard" class="screen">
+  <p class="greeting" id="greetingText"></p>
+  <div class="streak-bar">
+    <span class="streak-fire">🔥</span>
+    <span class="streak-num" id="streakNum">0</span>
+    <span class="streak-label">day streak</span>
+  </div>
+  <p class="section-title">Your Progress</p>
+  <div class="progress-ring" id="progressRings"></div>
+  <p class="section-title">Continue Learning</p>
+  <div id="dashLessonList"></div>
+</div>
+
+<!-- ═══ Lessons ═══ -->
+<div id="lessons" class="screen">
+  <p class="section-title" style="margin-top:0">All Lessons</p>
+  <div id="lessonList"></div>
+</div>
+
+<!-- ═══ Lesson Viewer ═══ -->
+<div id="lessonViewer" class="screen lesson-viewer">
+  <button class="lesson-back" onclick="closeLessonViewer()">← Back</button>
+  <div class="lesson-content" id="lessonContent"></div>
+  <div class="quiz-section" id="quizSection" style="display:none"></div>
+</div>
+
+<!-- ═══ Activities ═══ -->
+<div id="activities" class="screen">
+  <p class="section-title" style="margin-top:0">Hands-On Activities</p>
+  <div id="activityList"></div>
+</div>
+
+<!-- ═══ Activity Views ═══ -->
+<div id="budgetGame" class="screen budget-game">
+  <button class="lesson-back" onclick="showScreen('activities')">← Back</button>
+  <h2 style="margin-bottom:14px">💳 Budget Challenge</h2>
+  <div id="budgetContent"></div>
+</div>
+
+<div id="stockSim" class="screen stock-sim">
+  <button class="lesson-back" onclick="showScreen('activities')">← Back</button>
+  <h2 style="margin-bottom:14px">📈 Stock Market Sim</h2>
+  <div id="stockContent"></div>
+</div>
+
+<div id="savingsGoal" class="screen savings-goal">
+  <button class="lesson-back" onclick="showScreen('activities')">← Back</button>
+  <h2 style="margin-bottom:14px">🏦 Savings Goal Tracker</h2>
+  <div id="savingsContent"></div>
+</div>
+
+<!-- ═══ Parent View ═══ -->
+<div id="parentView" class="screen">
+  <div class="parent-header">
+    <span style="font-size:1.5rem">👨‍👧‍👦</span>
+    <h2>Parent Dashboard</h2>
+  </div>
+  <div class="kid-tab-bar" id="kidTabBar"></div>
+  <div id="parentContent"></div>
+</div>
+
+<!-- ═══ Settings ═══ -->
+<div id="settings" class="screen">
+  <h2 style="margin-bottom:16px">⚙️ Settings</h2>
+  <div class="settings-section">
+    <h3>Google Sheets Sync</h3>
+    <div class="setting-row">
+      <span class="setting-label">Apps Script URL</span>
+    </div>
+    <input class="setting-input" id="syncUrlInput" placeholder="Paste your Apps Script URL" style="width:100%; margin-bottom:8px;">
+    <p class="sync-status" id="syncStatusText">Not connected</p>
+    <button class="save-settings-btn" onclick="saveSyncUrl()">Save & Sync Now</button>
+  </div>
+  <div class="settings-section">
+    <h3>Profiles</h3>
+    <div id="profileSettings"></div>
+  </div>
+  <div class="settings-section">
+    <h3>Data</h3>
+    <button class="save-settings-btn" style="background:var(--red)" onclick="confirmReset()">Reset All Progress</button>
+  </div>
+</div>
+
+<!-- ═══ Bottom Nav ═══ -->
+<div class="bottom-nav" id="bottomNav" style="display:none">
+  <button class="nav-btn active" data-screen="dashboard">
+    <span class="nav-icon">🏠</span> Home
+  </button>
+  <button class="nav-btn" data-screen="lessons">
+    <span class="nav-icon">📚</span> Learn
+  </button>
+  <button class="nav-btn" data-screen="activities">
+    <span class="nav-icon">🎮</span> Play
+  </button>
+  <button class="nav-btn" data-screen="settings">
+    <span class="nav-icon">⚙️</span> Settings
+  </button>
+</div>
+
+<!-- ═══ Toast ═══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ Modal ═══ -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal-box" id="modalBox"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════════════════
+
+const DEFAULT_PROFILES = [
+  { id:'kid1', name:'Kid 1', age:12, emoji:'🧑' },
+  { id:'kid2', name:'Kid 2', age:9, emoji:'👦' }
+];
+
+let state = {
+  profiles: [...DEFAULT_PROFILES],
+  currentProfile: null,
+  parentMode: false,
+  syncUrl: '',
+  progress: {},  // { profileId: { lessonId: { completed, quizScore, steps }, activities: {...}, streak, lastActive, coins } }
+};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('moneysmart_state');
+    if (s) {
+      const parsed = JSON.parse(s);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('moneysmart_state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function getProfile(id) { return state.profiles.find(p => p.id === id); }
+
+function getProgress(profileId) {
+  if (!state.progress[profileId]) {
+    state.progress[profileId] = { lessons:{}, activities:{}, streak:0, lastActive:'', coins:0 };
+  }
+  return state.progress[profileId];
+}
+
+function isYounger() {
+  const p = getProfile(state.currentProfile);
+  return p && p.age <= 10;
+}
+
+// ═══════════════════════════════════════════════════
+// LESSON DATA
+// ═══════════════════════════════════════════════════
+
+const LESSONS = [
+  {
+    id:'needs-wants', module:'saving', emoji:'🛒', title:'Needs vs. Wants',
+    content: {
+      younger: `<h2>🛒 Needs vs. Wants</h2>
+<p>Every time you see something you'd like to buy, ask yourself: <strong>"Do I need this, or do I just want it?"</strong></p>
+<h3>What are Needs?</h3>
+<p>Needs are things you <em>must</em> have to live safely and stay healthy. Things like food, a place to live, clothes to wear, and medicine when you're sick.</p>
+<div class="callout">🤔 Think about it: What would happen if you didn't have food or a warm place to sleep? Those are needs!</div>
+<h3>What are Wants?</h3>
+<p>Wants are things that are nice to have but you can live without them. Video games, candy, new toys, and trendy shoes are all wants.</p>
+<div class="example-box"><div class="label">Example</div>
+You need shoes to protect your feet — that's a need. But do you need the $200 limited-edition sneakers? That fancy pair is a want!</div>
+<h3>Why Does This Matter?</h3>
+<p>When you know the difference, you make smarter choices with your money. You take care of your needs first, then decide what wants you can afford.</p>`,
+      older: `<h2>🛒 Needs vs. Wants</h2>
+<p>One of the most important money skills is telling the difference between <strong>needs</strong> and <strong>wants</strong>. It sounds simple, but even adults struggle with it!</p>
+<h3>Needs: The Non-Negotiables</h3>
+<p>Needs are essentials for survival and basic well-being: food, shelter, clothing, healthcare, transportation to school or work. Without these, your life would be seriously affected.</p>
+<h3>Wants: The Nice-to-Haves</h3>
+<p>Wants make life more enjoyable but aren't essential. The latest phone, eating out, streaming subscriptions, and designer clothes are wants.</p>
+<div class="callout">🧠 Pro tip: Marketing companies spend billions trying to make you feel like their product is a need. Recognizing this trick is a money superpower!</div>
+<div class="example-box"><div class="label">The Gray Area</div>
+Sometimes it's tricky. You <em>need</em> a phone for safety, but you <em>want</em> the latest $1,000 model. A $200 phone meets the need — the upgrade is the want. Learning to spot these gray areas saves you a lot of money.</div>
+<h3>The 24-Hour Rule</h3>
+<p>Before buying something you want (not need), wait 24 hours. If you still want it just as badly the next day, consider buying it. Most of the time, the urge fades — and your wallet thanks you.</p>`
+    },
+    quiz: [
+      { q:'Which of these is a NEED?', opts:['Video games','Winter coat','Movie tickets','Candy'], answer:1,
+        explain:'A winter coat keeps you warm and safe — that makes it a need!' },
+      { q:'What should you do before buying something you want?', opts:['Buy it right away','Wait 24 hours and think about it','Ask a friend to buy it','Ignore it forever'], answer:1,
+        explain:'The 24-hour rule helps you avoid impulse buying. If you still want it tomorrow, then decide!' },
+      { q:'Which is an example of a want disguised as a need?', opts:['Groceries for dinner','A $200 jacket when you have warm coats','Rent for your home','Medicine when sick'], answer:1,
+        explain:'You need warm clothes, but an expensive new jacket when you already have coats is a want!' }
+    ]
+  },
+  {
+    id:'saving-basics', module:'saving', emoji:'🐷', title:'The Power of Saving',
+    content: {
+      younger: `<h2>🐷 The Power of Saving</h2>
+<p>Saving money means keeping some of your money instead of spending it all. It's like planting a seed that grows into a big tree!</p>
+<h3>Why Save?</h3>
+<p>Saving helps you buy bigger things you really want later. If you spend all your allowance on candy today, you won't have money for that cool toy next month.</p>
+<div class="callout">💡 Try this: Every time you get money, put at least some of it in a savings jar before spending any!</div>
+<h3>The 3-Jar System</h3>
+<p>A great way to manage your money is to split it into three jars:</p>
+<div class="example-box"><div class="label">Your 3 Jars</div>
+🟢 <strong>Save Jar</strong> — For big goals (put in at least 30%)<br>
+🔵 <strong>Spend Jar</strong> — For things you want now (about 50%)<br>
+🟡 <strong>Share Jar</strong> — For helping others or gifts (about 20%)</div>
+<h3>Saving Goals</h3>
+<p>Pick something you want to save for. Write it down and draw a picture of it. Every time you add money to your save jar, you're one step closer!</p>`,
+      older: `<h2>🐷 The Power of Saving</h2>
+<p>Saving isn't just about putting money away — it's about giving your future self options and freedom.</p>
+<h3>Pay Yourself First</h3>
+<p>The #1 rule of saving: before you spend on anything, set aside a portion for savings. Treat it like a bill you have to pay — to yourself.</p>
+<div class="callout">💡 Most financial experts recommend saving at least 20% of any money you receive. If you get $20 for your birthday, $4 goes straight to savings.</div>
+<h3>The 50/30/20 Rule</h3>
+<p>This is how many adults budget their income, and you can start practicing now:</p>
+<div class="example-box"><div class="label">The 50/30/20 Rule</div>
+<strong>50% — Needs:</strong> Things you must pay for<br>
+<strong>30% — Wants:</strong> Fun stuff and treats<br>
+<strong>20% — Savings:</strong> Future you will thank present you</div>
+<h3>Emergency Funds</h3>
+<p>Life throws surprises at you. Adults try to save 3-6 months of expenses for emergencies. You can practice by keeping a small "rainy day" fund for unexpected costs, like replacing a broken phone screen.</p>
+<h3>Compound Growth</h3>
+<p>Here's the magic: money you save can <em>earn more money</em> over time through interest. Even small amounts add up. If you save $5/week starting at age 12, by age 18 you'd have over $1,500 — and that's before interest!</p>`
+    },
+    quiz: [
+      { q:'What does "Pay Yourself First" mean?', opts:['Buy yourself a treat','Save some money before spending any','Pay your bills first','Give money to your parents'], answer:1,
+        explain:'Pay yourself first means putting money into savings before you spend on anything else!' },
+      { q:'In the 50/30/20 rule, what does the 20% go to?', opts:['Wants','Taxes','Savings','Food'], answer:2,
+        explain:'20% goes to savings. This helps you build up money over time for future goals!' },
+      { q:'If you save $5 per week, about how much will you have after one year?', opts:['$52','$100','$260','$500'], answer:2,
+        explain:'$5 × 52 weeks = $260! Small amounts add up over a whole year.' }
+    ]
+  },
+  {
+    id:'budgeting', module:'saving', emoji:'📋', title:'Making a Budget',
+    content: {
+      younger: `<h2>📋 Making a Budget</h2>
+<p>A budget is a plan for your money. It tells your money where to go instead of wondering where it went!</p>
+<h3>What is a Budget?</h3>
+<p>Think of a budget like a map. Before a road trip, you plan your route. A budget is a plan for how you'll use your money.</p>
+<div class="example-box"><div class="label">Example Budget for a Kid</div>
+Let's say you get $10 per week allowance:<br><br>
+🟢 Save: $3 (for a $60 video game — you'll get there in 20 weeks!)<br>
+🔵 Spend: $5 (snacks, small toys, trading cards)<br>
+🟡 Share: $2 (friend's birthday gift fund)</div>
+<h3>Track Your Money</h3>
+<p>Write down what you spend. At the end of the week, look at your list. Were you surprised by anything? This helps you make better choices next time!</p>
+<div class="callout">📝 Try keeping a spending journal for one week. Write down every single thing you buy or spend money on!</div>`,
+      older: `<h2>📋 Making a Budget</h2>
+<p>A budget is your financial game plan. Without one, money has a way of disappearing without you realizing where it went.</p>
+<h3>Step 1: Know Your Income</h3>
+<p>Write down all the money you receive: allowance, birthday money, chore pay, babysitting earnings, etc.</p>
+<h3>Step 2: List Your Expenses</h3>
+<p>Track everything you spend for a month. You'll probably be surprised! Most people underestimate their spending.</p>
+<h3>Step 3: Set Categories</h3>
+<div class="example-box"><div class="label">Monthly Budget Example ($80/month income)</div>
+<strong>Savings:</strong> $16 (20%)<br>
+<strong>Long-term goal:</strong> $12 (15%) — saving for headphones<br>
+<strong>Entertainment:</strong> $20 (25%) — movies, games<br>
+<strong>Food/Snacks:</strong> $16 (20%) — treats with friends<br>
+<strong>Giving:</strong> $8 (10%) — gifts, donations<br>
+<strong>Buffer:</strong> $8 (10%) — unexpected expenses</div>
+<h3>Step 4: Review & Adjust</h3>
+<p>Check your budget weekly. Did you overspend somewhere? Adjust! The best budget is one you actually follow, so make it realistic.</p>
+<div class="callout">🎯 Pro tip: Use the "envelope method" — put cash in labeled envelopes for each category. When an envelope is empty, that category is done for the month.</div>`
+    },
+    quiz: [
+      { q:'What is a budget?', opts:['A list of things to buy','A plan for how to use your money','A type of bank account','A way to borrow money'], answer:1,
+        explain:'A budget is your plan for where your money will go!' },
+      { q:'What should you do if you overspend in one category?', opts:['Ignore it','Borrow money','Adjust your budget for next time','Stop budgeting'], answer:2,
+        explain:'The best response is to review and adjust. Budgets are flexible tools, not rigid rules!' },
+      { q:'Why is tracking spending important?', opts:['It wastes time','It shows you where money actually goes','It makes you spend more','It only matters for adults'], answer:1,
+        explain:'Tracking spending often reveals surprises about where your money really goes!' }
+    ]
+  },
+  {
+    id:'what-is-investing', module:'investing', emoji:'📈', title:'What is Investing?',
+    content: {
+      younger: `<h2>📈 What is Investing?</h2>
+<p>Investing is using your money to try to make <em>more</em> money over time. It's like planting an apple tree — you plant one seed and eventually get lots of apples!</p>
+<h3>How Does It Work?</h3>
+<p>When you invest, you buy a tiny piece of something — like a company or a building. If that thing does well, your piece becomes worth more money!</p>
+<div class="example-box"><div class="label">Lemonade Stand Example</div>
+Your friend starts a lemonade stand and needs $10 for supplies. You give them $10 and in return, you own half the stand. If the stand earns $30, your half is worth $15 — you made $5!</div>
+<h3>Why Not Just Save?</h3>
+<p>Saving is safe but slow. A piggy bank doesn't grow. Investing can grow your money faster, but there's a catch — sometimes investments can lose value too.</p>
+<div class="callout">⚖️ The main rule: higher reward usually means higher risk. A savings account is very safe but grows slowly. Stocks can grow faster but can also drop in value.</div>`,
+      older: `<h2>📈 What is Investing?</h2>
+<p>Investing means putting your money to work so it can grow over time. Instead of just sitting in a savings account, invested money has the potential to earn much more.</p>
+<h3>The Power of Compound Interest</h3>
+<p>This is the most important concept in investing. Compound interest means you earn interest on your interest — your money grows like a snowball rolling downhill.</p>
+<div class="example-box"><div class="label">Compound Interest in Action</div>
+If you invest $100 and earn 10% per year:<br>
+Year 1: $100 → $110 (earned $10)<br>
+Year 2: $110 → $121 (earned $11 — more than last year!)<br>
+Year 5: $161<br>
+Year 10: $259<br>
+Year 20: $673<br><br>
+Your $100 turned into $673 without adding a single dollar more!</div>
+<h3>Risk vs. Reward</h3>
+<p>Every investment involves risk — the chance you might lose money. Generally, investments that could earn you more also carry more risk.</p>
+<div class="callout">⏰ Time is your biggest advantage! Starting to invest young, even with small amounts, gives compound interest decades to work its magic. A 12-year-old investor has a huge head start over someone who starts at 30.</div>`
+    },
+    quiz: [
+      { q:'What is compound interest?', opts:['Interest that stays the same','Earning interest on your interest','A type of bank fee','Interest you pay on loans'], answer:1,
+        explain:'Compound interest means your interest earns its own interest — your money grows faster over time!' },
+      { q:'If you invest $100 at 10% per year, how much do you have after 1 year?', opts:['$100','$105','$110','$200'], answer:2,
+        explain:'10% of $100 = $10, so you have $110 after one year!' },
+      { q:'What does "higher risk, higher reward" mean?', opts:['Risky investments always lose money','Safer investments grow faster','Investments that could earn more can also lose more','You should always take the biggest risk'], answer:2,
+        explain:'Higher potential gains usually come with higher potential losses. It\'s about finding the right balance for you!' }
+    ]
+  },
+  {
+    id:'stocks-bonds', module:'investing', emoji:'🏢', title:'Stocks & Bonds',
+    content: {
+      younger: `<h2>🏢 Stocks & Bonds</h2>
+<h3>What are Stocks?</h3>
+<p>A stock is a tiny piece of a company. If you buy a stock of a toy company, you own a small piece of that company! If the company does well and sells lots of toys, your stock becomes worth more.</p>
+<div class="example-box"><div class="label">Think of it this way</div>
+Imagine a pizza cut into 1,000 slices. Each slice is a "stock." If you buy one slice, you own 1/1000th of the pizza (the company). If the pizza becomes super popular and everyone wants it, your slice becomes more valuable!</div>
+<h3>What are Bonds?</h3>
+<p>A bond is like lending your money to someone. You give a company or the government your money, and they promise to pay you back later with a little extra (interest). It's safer than stocks, but you usually earn less.</p>
+<div class="callout">🎯 Stocks = owning a piece of a company (more risk, more potential reward)<br>Bonds = lending money and getting paid back with interest (less risk, less reward)</div>`,
+      older: `<h2>🏢 Stocks & Bonds</h2>
+<h3>Stocks (Equities)</h3>
+<p>When you buy stock, you become a <em>partial owner</em> of that company. Companies sell stock to raise money for growth. As an owner, you can profit in two ways:</p>
+<div class="example-box"><div class="label">Two Ways Stocks Make Money</div>
+<strong>1. Price appreciation:</strong> Buy at $50, sell at $75 = $25 profit<br>
+<strong>2. Dividends:</strong> Some companies share profits with stockholders regularly — like getting a little "thank you" check every few months</div>
+<h3>Bonds (Fixed Income)</h3>
+<p>A bond is essentially a loan you give to a company or government. They pay you interest (called a "coupon") regularly, then return your original investment at a set date (the "maturity date").</p>
+<h3>How They Compare</h3>
+<div class="example-box"><div class="label">Stocks vs. Bonds</div>
+<strong>Risk:</strong> Stocks = higher risk, Bonds = lower risk<br>
+<strong>Reward:</strong> Stocks average ~10%/year historically, Bonds ~3-5%<br>
+<strong>Ownership:</strong> Stocks = you own part of the company, Bonds = the company owes you<br>
+<strong>Best for:</strong> Stocks = long-term growth, Bonds = stability and income</div>
+<div class="callout">🧩 Smart investors hold <em>both</em> stocks and bonds. When stocks drop, bonds often hold steady, and vice versa. This is called <strong>diversification</strong> — not putting all your eggs in one basket.</div>`
+    },
+    quiz: [
+      { q:'What do you own when you buy a stock?', opts:['A loan to a company','A small piece of the company','A bond','A savings account'], answer:1,
+        explain:'Stocks represent ownership. You literally own a tiny piece of the company!' },
+      { q:'What is a bond most like?', opts:['Buying a toy','Lending money to someone','Winning the lottery','Opening a store'], answer:1,
+        explain:'A bond is like a loan — you lend money and get paid back with interest!' },
+      { q:'What is diversification?', opts:['Buying only one stock','Putting all money in savings','Spreading money across different investments','Spending money on different things'], answer:2,
+        explain:'Diversification means spreading your investments so if one drops, others might still do well. Don\'t put all your eggs in one basket!' }
+    ]
+  },
+  {
+    id:'index-funds', module:'investing', emoji:'🧺', title:'Index Funds & ETFs',
+    content: {
+      younger: `<h2>🧺 Index Funds & ETFs</h2>
+<h3>What if you could buy ALL the stocks at once?</h3>
+<p>Picking one company to invest in is risky — what if they don't do well? An <strong>index fund</strong> lets you buy a little piece of hundreds of companies all at once!</p>
+<div class="example-box"><div class="label">Think of it like this</div>
+Instead of betting that one team wins the championship, you bet on the whole league. Even if some teams lose, the league overall usually grows!</div>
+<h3>Why is this great?</h3>
+<p>If one company in your index fund does badly, it's okay because the others make up for it. Over long periods of time, the stock market has always gone up.</p>
+<div class="callout">🌟 Fun fact: If you had invested $100 in an index fund 30 years ago, it would be worth about $2,000 today! The key is patience.</div>`,
+      older: `<h2>🧺 Index Funds & ETFs</h2>
+<h3>The Smart Investor's Secret Weapon</h3>
+<p>An index fund tracks a group of stocks (an "index") rather than picking individual ones. The S&P 500 index, for example, includes 500 of the biggest US companies.</p>
+<h3>Why Index Funds Win</h3>
+<div class="example-box"><div class="label">Index Funds vs. Stock Picking</div>
+<strong>Lower risk:</strong> If one company tanks, the others cushion the blow<br>
+<strong>Low fees:</strong> No expensive fund manager needed (fees eat into profits!)<br>
+<strong>Better performance:</strong> Over 15 years, about 90% of professional stock pickers <em>fail</em> to beat a simple index fund<br>
+<strong>Easy:</strong> Buy one fund and you're diversified across hundreds of companies</div>
+<h3>ETFs (Exchange-Traded Funds)</h3>
+<p>ETFs are like index funds but trade like stocks — you can buy and sell them anytime during the day. Many popular ETFs track the S&P 500 or other indexes.</p>
+<div class="callout">💡 Warren Buffett, one of the world's most successful investors, has said that most people should just invest in a low-cost S&P 500 index fund. If it's good enough for him, it's worth understanding!</div>`
+    },
+    quiz: [
+      { q:'What does an index fund do?', opts:['Invests in one company','Lets you buy a piece of many companies at once','Only invests in bonds','Is the same as a savings account'], answer:1,
+        explain:'An index fund bundles many stocks together so you own a small piece of lots of companies!' },
+      { q:'Why do index funds often beat professional stock pickers?', opts:['They use magic','Lower fees and broad diversification','They only pick winners','They invest in bonds'], answer:1,
+        explain:'Index funds have very low fees and are broadly diversified, which is hard for individual stock pickers to consistently beat!' },
+      { q:'What is the S&P 500?', opts:['A savings account','A type of bond','An index of 500 large US companies','A video game score'], answer:2,
+        explain:'The S&P 500 tracks 500 of the largest companies in the United States!' }
+    ]
+  },
+  {
+    id:'earning-money', module:'earning', emoji:'💪', title:'Ways to Earn Money',
+    content: {
+      younger: `<h2>💪 Ways to Earn Money</h2>
+<p>Money doesn't grow on trees, but there are lots of ways you can earn it!</p>
+<h3>Chores & Helping Out</h3>
+<p>Many families pay for extra chores beyond your regular responsibilities. Washing the car, mowing the lawn, organizing the garage — these are all ways to earn.</p>
+<h3>Using Your Skills</h3>
+<div class="example-box"><div class="label">Kid-Friendly Money Ideas</div>
+🎨 Sell artwork or crafts<br>
+🐕 Dog walking or pet sitting for neighbors<br>
+🍋 Lemonade stand or bake sale<br>
+📚 Help younger kids with homework<br>
+🌱 Garden help — planting, weeding, watering</div>
+<h3>The Value of Work</h3>
+<p>When you earn money yourself, you appreciate it more. You'll think twice before spending $10 you worked hard for compared to $10 you were just given!</p>
+<div class="callout">💡 The most important thing about earning money isn't the money itself — it's learning that you can create value for others and be rewarded for it!</div>`,
+      older: `<h2>💪 Ways to Earn Money</h2>
+<h3>Active vs. Passive Income</h3>
+<p><strong>Active income</strong> is money you earn by working — trading your time for money. <strong>Passive income</strong> is money that comes in even when you're not actively working, like rental income or investment dividends.</p>
+<h3>Building Marketable Skills</h3>
+<p>The more valuable skills you have, the more you can earn. Some high-value skills you can start learning now:</p>
+<div class="example-box"><div class="label">Skills That Pay</div>
+💻 <strong>Coding/Tech:</strong> Build websites, apps, or games<br>
+🎨 <strong>Design:</strong> Graphics, logos, social media content<br>
+✍️ <strong>Writing:</strong> Blog posts, editing, tutoring<br>
+📸 <strong>Photo/Video:</strong> Event coverage, social media content<br>
+🔧 <strong>Practical skills:</strong> Lawn care, car washing, organizing</div>
+<h3>The Employee vs. Entrepreneur Path</h3>
+<p>You can earn money by working for someone else (employee) or by starting your own business (entrepreneur). Both are valid! Many people do both.</p>
+<div class="callout">🎯 Think about what you're good at and what people need. Where those two things overlap is where earning opportunities live!</div>`
+    },
+    quiz: [
+      { q:'What is "passive income"?', opts:['Money from a job','Money that comes in without active work','Free money','Borrowed money'], answer:1,
+        explain:'Passive income keeps flowing even when you\'re not actively working, like dividends from investments!' },
+      { q:'Why is learning skills important for earning money?', opts:['Skills don\'t matter','More valuable skills = more earning potential','Only one skill matters','Skills are only for adults'], answer:1,
+        explain:'The more valuable and rare your skills are, the more people are willing to pay for them!' },
+      { q:'What is an entrepreneur?', opts:['Someone who works for a big company','Someone who starts their own business','Someone who only saves money','Someone who borrows money'], answer:1,
+        explain:'An entrepreneur creates their own business to solve problems or meet needs!' }
+    ]
+  },
+  {
+    id:'business-basics', module:'earning', emoji:'🏪', title:'Business Basics',
+    content: {
+      younger: `<h2>🏪 Starting a Small Business</h2>
+<p>Have you ever thought about starting your own little business? Kids do it all the time!</p>
+<h3>Every Business Starts with an Idea</h3>
+<p>A good business idea solves a problem or gives people something they want. What do people around you need help with?</p>
+<div class="example-box"><div class="label">Business Idea Formula</div>
+<strong>What am I good at?</strong> + <strong>What do people need?</strong> = 💡 Business Idea!<br><br>
+Example: You're good at drawing + Your neighbor needs birthday cards = Custom card business!</div>
+<h3>Costs and Profit</h3>
+<p><strong>Cost</strong> is what you spend to make or do something. <strong>Revenue</strong> is what people pay you. <strong>Profit</strong> is what's left over!</p>
+<div class="callout">🍋 If you spend $5 on lemons and cups, and you sell lemonade for $15 total, your profit is $15 - $5 = $10!</div>`,
+      older: `<h2>🏪 Business Basics</h2>
+<h3>How Businesses Work</h3>
+<p>Every business follows the same basic formula: create something valuable, find customers who want it, and charge more than it costs you to provide it.</p>
+<h3>Key Business Concepts</h3>
+<div class="example-box"><div class="label">Business Terms to Know</div>
+<strong>Revenue:</strong> Total money coming in from sales<br>
+<strong>Expenses:</strong> Costs of running the business (supplies, marketing, etc.)<br>
+<strong>Profit:</strong> Revenue minus expenses (what you actually keep)<br>
+<strong>Profit margin:</strong> Profit ÷ Revenue × 100 (shows efficiency)<br>
+<strong>Customer acquisition:</strong> How you get new customers</div>
+<h3>The Lean Startup Approach</h3>
+<p>Don't invest a lot upfront. Start small, test your idea with real customers, learn what works, and adjust. This minimizes risk while you figure things out.</p>
+<div class="callout">🎯 The most successful businesses solve real problems. Before starting, ask 10 people: "Would you pay for this?" If most say yes, you might have something!</div>
+<h3>Revenue Streams</h3>
+<p>Smart businesses don't rely on just one way to make money. A YouTube channel might earn from ads, sponsorships, merchandise, and courses — multiple streams from one skill!</p>`
+    },
+    quiz: [
+      { q:'What is profit?', opts:['All the money you make','Money you spend on supplies','Revenue minus expenses','The price of your product'], answer:2,
+        explain:'Profit = Revenue (money in) - Expenses (money out). It\'s what you actually keep!' },
+      { q:'What\'s the first step to starting a business?', opts:['Borrow lots of money','Find a problem people need solved','Buy a building','Hire employees'], answer:1,
+        explain:'Great businesses start by identifying a real problem or need that people will pay to have solved!' },
+      { q:'Why should you start small when testing a business idea?', opts:['Small businesses always fail','To minimize risk while learning','Because you can\'t start big','Small is always better'], answer:1,
+        explain:'Starting small lets you test and learn without risking too much money upfront!' }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════
+// BUDGET CHALLENGE DATA
+// ═══════════════════════════════════════════════════
+
+function getBudgetScenario() {
+  const younger = isYounger();
+  const budget = younger ? 25 : 50;
+  const items = younger ? [
+    { name:'School lunch', cost:5, type:'need', desc:'Healthy lunch for the week' },
+    { name:'New colored pencils', cost:8, type:'need', desc:'Yours are broken and you need them for art class' },
+    { name:'Candy bar', cost:2, type:'want', desc:'Looks delicious...' },
+    { name:'Friend\'s birthday gift', cost:7, type:'want', desc:'Your friend\'s party is this weekend' },
+    { name:'Fidget spinner', cost:6, type:'want', desc:'Everyone at school has one!' },
+    { name:'Savings deposit', cost:5, type:'save', desc:'Put money in your savings jar' },
+    { name:'Comic book', cost:4, type:'want', desc:'The latest issue of your favorite series' },
+    { name:'Water bottle', cost:8, type:'need', desc:'You lost yours and need one for soccer' },
+  ] : [
+    { name:'School supplies', cost:12, type:'need', desc:'Notebooks, pens, folders for the semester' },
+    { name:'Monthly phone bill', cost:10, type:'need', desc:'Your share of the family phone plan' },
+    { name:'Movie with friends', cost:15, type:'want', desc:'New blockbuster this weekend' },
+    { name:'Savings deposit', cost:10, type:'save', desc:'Building your emergency fund' },
+    { name:'Video game', cost:20, type:'want', desc:'Just released — all your friends are playing' },
+    { name:'Running shoes', cost:18, type:'need', desc:'Your current pair is worn out for track' },
+    { name:'Fast food lunch', cost:9, type:'want', desc:'Eating out instead of packing lunch' },
+    { name:'Investment deposit', cost:10, type:'save', desc:'Put money into your index fund' },
+    { name:'Streaming subscription', cost:8, type:'want', desc:'Monthly streaming service' },
+    { name:'Charity donation', cost:5, type:'give', desc:'Support the school food drive' },
+  ];
+  return { budget, items };
+}
+
+// ═══════════════════════════════════════════════════
+// STOCK SIM DATA
+// ═══════════════════════════════════════════════════
+
+function getStocks() {
+  return [
+    { ticker:'TOYS', name:'FunTime Toys Co.', price:25, desc:'Makes popular board games and action figures', volatility:0.12 },
+    { ticker:'SNAX', name:'YumYum Snacks Inc.', price:18, desc:'Sells chips, cookies, and juice boxes everywhere', volatility:0.08 },
+    { ticker:'TECH', name:'CoolGadgets Corp.', price:45, desc:'Creates phones, tablets, and smartwatches', volatility:0.15 },
+    { ticker:'GAME', name:'PixelPlay Studios', price:32, desc:'Makes popular video games and apps', volatility:0.18 },
+    { ticker:'PETS', name:'Happy Paws Inc.', price:20, desc:'Pet food, toys, and vet care chain', volatility:0.10 },
+  ];
+}
+
+// ═══════════════════════════════════════════════════
+// DISCUSSION PROMPTS
+// ═══════════════════════════════════════════════════
+
+const DISCUSSION_PROMPTS = [
+  { topic:'Needs vs. Wants at Home', prompt:'Walk through your house together and identify 5 things that are needs and 5 that are wants. Were there any surprises?', forLesson:'needs-wants' },
+  { topic:'Family Budget Night', prompt:'Show your child a simplified version of one monthly bill (like groceries). Discuss how you decide what to buy and what to skip.', forLesson:'budgeting' },
+  { topic:'The Saving Challenge', prompt:'Set a savings goal together. Help them calculate how many weeks of allowance it will take. Make a visual tracker!', forLesson:'saving-basics' },
+  { topic:'Company Research', prompt:'Pick a company your child knows (Disney, Nike, Nintendo). Look up the stock price together. Discuss what might make it go up or down.', forLesson:'what-is-investing' },
+  { topic:'Grocery Store Math', prompt:'Next time you shop, give your child a $20 budget for snacks. Let them make the choices and calculate the total.', forLesson:'budgeting' },
+  { topic:'Start a Mini Business', prompt:'Help your child identify a service they could offer in the neighborhood. Calculate startup costs, pricing, and potential profit together.', forLesson:'business-basics' },
+  { topic:'Risk Discussion', prompt:'Use a simple example: "Would you rather have $5 for sure, or flip a coin for $0 or $12?" Discuss how risk feels.', forLesson:'stocks-bonds' },
+  { topic:'Investing Time Machine', prompt:'Look up what $100 invested in the S&P 500 index 20 years ago would be worth today. Discuss what this means for starting early.', forLesson:'index-funds' },
+];
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION & SCREENS
+// ═══════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.screen === id);
+  });
+  if (id === 'dashboard') renderDashboard();
+  else if (id === 'lessons') renderLessonList();
+  else if (id === 'activities') renderActivities();
+  else if (id === 'parentView') renderParentView();
+  else if (id === 'settings') renderSettings();
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => showScreen(btn.dataset.screen));
+});
+
+// ═══════════════════════════════════════════════════
+// PROFILE MANAGEMENT
+// ═══════════════════════════════════════════════════
+
+function renderProfileScreen() {
+  const grid = document.getElementById('profileGrid');
+  grid.innerHTML = state.profiles.map(p => `
+    <button class="profile-btn" onclick="selectProfile('${p.id}')">
+      <div class="avatar">${p.emoji}</div>
+      ${p.name}
+      <span class="age-tag">Age ${p.age}</span>
+    </button>
+  `).join('');
+}
+
+function selectProfile(id) {
+  state.currentProfile = id;
+  state.parentMode = false;
+  saveState();
+  updateStreak();
+  enterApp();
+}
+
+function enterParentMode() {
+  state.parentMode = true;
+  state.currentProfile = null;
+  saveState();
+  document.getElementById('profileScreen').classList.add('hidden');
+  document.getElementById('mainHeader').style.display = 'flex';
+  document.getElementById('bottomNav').style.display = 'none';
+  document.getElementById('userChip').textContent = '👨‍👧‍👦 Parent';
+  showScreen('parentView');
+}
+
+function enterApp() {
+  const p = getProfile(state.currentProfile);
+  document.getElementById('profileScreen').classList.add('hidden');
+  document.getElementById('mainHeader').style.display = 'flex';
+  document.getElementById('bottomNav').style.display = 'flex';
+  document.getElementById('userChip').textContent = p.emoji + ' ' + p.name;
+  showScreen('dashboard');
+}
+
+function switchProfile() {
+  document.getElementById('profileScreen').classList.remove('hidden');
+  document.getElementById('mainHeader').style.display = 'none';
+  document.getElementById('bottomNav').style.display = 'none';
+  renderProfileScreen();
+}
+
+function updateStreak() {
+  const prog = getProgress(state.currentProfile);
+  const today = new Date().toDateString();
+  if (prog.lastActive === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (prog.lastActive === yesterday) {
+    prog.streak = (prog.streak || 0) + 1;
+  } else if (prog.lastActive !== today) {
+    prog.streak = 1;
+  }
+  prog.lastActive = today;
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════
+
+function renderDashboard() {
+  const p = getProfile(state.currentProfile);
+  const prog = getProgress(state.currentProfile);
+
+  document.getElementById('greetingText').textContent = `Hey ${p.name}! 👋`;
+  document.getElementById('streakNum').textContent = prog.streak || 0;
+
+  // Progress rings
+  const modules = [
+    { id:'saving', emoji:'🐷', label:'Saving' },
+    { id:'investing', emoji:'📈', label:'Investing' },
+    { id:'earning', emoji:'💪', label:'Earning' }
+  ];
+  document.getElementById('progressRings').innerHTML = modules.map(m => {
+    const moduleLessons = LESSONS.filter(l => l.module === m.id);
+    const completed = moduleLessons.filter(l => prog.lessons[l.id]?.completed).length;
+    const pct = Math.round((completed / moduleLessons.length) * 100);
+    return `<div class="ring-card">
+      <div class="ring-emoji">${m.emoji}</div>
+      <div class="ring-label">${m.label}</div>
+      <div class="ring-pct">${pct}%</div>
+      <div class="lesson-progress-bar"><div class="lesson-progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Next lessons
+  const nextLessons = LESSONS.filter(l => !prog.lessons[l.id]?.completed).slice(0, 3);
+  document.getElementById('dashLessonList').innerHTML = nextLessons.length
+    ? nextLessons.map(l => renderLessonCard(l, prog)).join('')
+    : '<p style="color:var(--text-dim);text-align:center;padding:20px">🎉 You\'ve completed all lessons! Try the activities.</p>';
+}
+
+// ═══════════════════════════════════════════════════
+// LESSONS
+// ═══════════════════════════════════════════════════
+
+function renderLessonCard(lesson, prog) {
+  const lp = prog.lessons[lesson.id];
+  const completed = lp?.completed;
+  const score = lp?.quizScore;
+  let badge = '<span class="lesson-badge badge-new">New</span>';
+  if (completed) badge = `<span class="lesson-badge badge-done">✓ ${score !== undefined ? score + '%' : 'Done'}</span>`;
+
+  return `<div class="lesson-card" onclick="openLesson('${lesson.id}')">
+    <div class="lesson-header">
+      <span class="lesson-emoji">${lesson.emoji}</span>
+      <span class="lesson-title">${lesson.title}</span>
+      ${badge}
+    </div>
+    <p class="lesson-desc">${lesson.module.charAt(0).toUpperCase() + lesson.module.slice(1)} · ${lesson.quiz.length} quiz questions</p>
+  </div>`;
+}
+
+function renderLessonList() {
+  const prog = getProgress(state.currentProfile);
+  const modules = ['saving','investing','earning'];
+  const labels = { saving:'💰 Saving & Budgeting', investing:'📈 Investing', earning:'💪 Earning & Business' };
+
+  document.getElementById('lessonList').innerHTML = modules.map(m => {
+    const moduleLessons = LESSONS.filter(l => l.module === m);
+    return `<p class="section-title">${labels[m]}</p>` +
+      moduleLessons.map(l => renderLessonCard(l, prog)).join('');
+  }).join('');
+}
+
+let currentQuizIndex = 0;
+let currentLessonId = '';
+
+function openLesson(id) {
+  currentLessonId = id;
+  currentQuizIndex = 0;
+  const lesson = LESSONS.find(l => l.id === id);
+  const content = isYounger() ? lesson.content.younger : lesson.content.older;
+
+  document.getElementById('lessonContent').innerHTML = content;
+  document.getElementById('quizSection').style.display = 'none';
+
+  // Add "Take Quiz" button at bottom of content
+  document.getElementById('lessonContent').innerHTML += `
+    <div style="margin-top:24px; text-align:center;">
+      <button class="btn-primary" style="padding:14px 32px; border-radius:var(--radius); border:none; font-size:1rem; font-weight:600;" onclick="startQuiz()">
+        📝 Take the Quiz
+      </button>
+    </div>`;
+
+  showScreen('lessonViewer');
+}
+
+function startQuiz() {
+  currentQuizIndex = 0;
+  document.getElementById('quizSection').style.display = 'block';
+  renderQuizQuestion();
+  document.getElementById('quizSection').scrollIntoView({ behavior:'smooth' });
+}
+
+function renderQuizQuestion() {
+  const lesson = LESSONS.find(l => l.id === currentLessonId);
+  const q = lesson.quiz[currentQuizIndex];
+  const total = lesson.quiz.length;
+
+  document.getElementById('quizSection').innerHTML = `
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:8px;">Question ${currentQuizIndex + 1} of ${total}</p>
+    <p class="quiz-question">${q.q}</p>
+    <div class="quiz-options">
+      ${q.opts.map((opt, i) => `<button class="quiz-opt" onclick="answerQuiz(${i}, ${q.answer})">${opt}</button>`).join('')}
+    </div>
+    <div id="quizFeedback"></div>
+    <div class="quiz-nav" id="quizNav" style="display:none"></div>`;
+}
+
+let quizCorrectCount = 0;
+function answerQuiz(selected, correct) {
+  if (currentQuizIndex === 0 && selected !== undefined) quizCorrectCount = 0; // reset on first q if needed
+  const lesson = LESSONS.find(l => l.id === currentLessonId);
+  const q = lesson.quiz[currentQuizIndex];
+  const opts = document.querySelectorAll('.quiz-opt');
+
+  opts.forEach((opt, i) => {
+    opt.classList.add('disabled');
+    if (i === correct) opt.classList.add('correct');
+    if (i === selected && selected !== correct) opt.classList.add('wrong');
+  });
+
+  const isCorrect = selected === correct;
+  if (isCorrect) quizCorrectCount++;
+
+  document.getElementById('quizFeedback').innerHTML = `
+    <div class="quiz-feedback ${isCorrect ? 'correct-fb' : 'wrong-fb'}">
+      ${isCorrect ? '✅ Correct!' : '❌ Not quite.'} ${q.explain}
+    </div>`;
+
+  const isLast = currentQuizIndex >= lesson.quiz.length - 1;
+  document.getElementById('quizNav').style.display = 'flex';
+  document.getElementById('quizNav').innerHTML = isLast
+    ? `<button class="btn-primary" onclick="finishQuiz()">See Results 🎉</button>`
+    : `<button class="btn-primary" onclick="nextQuizQ()">Next Question →</button>`;
+}
+
+function nextQuizQ() {
+  currentQuizIndex++;
+  renderQuizQuestion();
+}
+
+function finishQuiz() {
+  const lesson = LESSONS.find(l => l.id === currentLessonId);
+  const total = lesson.quiz.length;
+  const pct = Math.round((quizCorrectCount / total) * 100);
+  const prog = getProgress(state.currentProfile);
+
+  prog.lessons[currentLessonId] = { completed:true, quizScore:pct, completedAt:Date.now() };
+  prog.coins = (prog.coins || 0) + (pct >= 70 ? 10 : 5);
+  saveState();
+  syncToSheets();
+
+  const emoji = pct === 100 ? '🏆' : pct >= 70 ? '⭐' : '💪';
+  document.getElementById('quizSection').innerHTML = `
+    <div style="text-align:center; padding:20px;">
+      <div style="font-size:3rem; margin-bottom:10px;">${emoji}</div>
+      <h3 style="font-size:1.3rem; margin-bottom:6px;">${pct === 100 ? 'Perfect Score!' : pct >= 70 ? 'Great Job!' : 'Keep Learning!'}</h3>
+      <p style="color:var(--text-dim); margin-bottom:6px;">You got ${quizCorrectCount} out of ${total} correct (${pct}%)</p>
+      <p style="color:var(--gold); font-weight:600;">+${pct >= 70 ? 10 : 5} coins earned! 🪙</p>
+      <div style="margin-top:16px; display:flex; gap:10px; justify-content:center;">
+        <button class="btn-secondary" onclick="openLesson('${currentLessonId}')" style="padding:10px 20px; border-radius:var(--radius); border:1px solid var(--border); background:var(--card); color:var(--text); font-weight:600;">Review Lesson</button>
+        <button class="btn-primary" onclick="closeLessonViewer()" style="padding:10px 20px; border-radius:var(--radius); border:none; font-weight:600;">Continue →</button>
+      </div>
+    </div>`;
+
+  spawnCoin();
+}
+
+function closeLessonViewer() {
+  showScreen('lessons');
+}
+
+// ═══════════════════════════════════════════════════
+// ACTIVITIES
+// ═══════════════════════════════════════════════════
+
+function renderActivities() {
+  const activities = [
+    { id:'budget', emoji:'💳', title:'Budget Challenge', desc:'You have a limited budget — choose wisely between needs and wants!', screen:'budgetGame' },
+    { id:'stocks', emoji:'📈', title:'Stock Market Simulator', desc:'Buy and sell virtual stocks and watch your portfolio grow (or shrink)!', screen:'stockSim' },
+    { id:'savings', emoji:'🏦', title:'Savings Goal Tracker', desc:'Set a savings goal and track your progress toward it!', screen:'savingsGoal' }
+  ];
+
+  document.getElementById('activityList').innerHTML = activities.map(a => `
+    <div class="activity-card" onclick="startActivity('${a.id}', '${a.screen}')">
+      <div class="activity-header">
+        <span class="activity-emoji">${a.emoji}</span>
+        <span class="activity-title">${a.title}</span>
+      </div>
+      <p class="activity-desc">${a.desc}</p>
+    </div>
+  `).join('');
+}
+
+function startActivity(id, screen) {
+  if (id === 'budget') initBudgetGame();
+  else if (id === 'stocks') initStockSim();
+  else if (id === 'savings') initSavingsGoal();
+  showScreen(screen);
+}
+
+// ═══════════════════════════════════════════════════
+// BUDGET CHALLENGE
+// ═══════════════════════════════════════════════════
+
+let budgetState = {};
+function initBudgetGame() {
+  const scenario = getBudgetScenario();
+  budgetState = {
+    budget: scenario.budget,
+    remaining: scenario.budget,
+    items: scenario.items.map(i => ({ ...i, decided:false, bought:false })),
+    currentIndex: 0,
+    needsCount: 0,
+    wantsCount: 0,
+    savedAmount: 0
+  };
+  renderBudgetItem();
+}
+
+function renderBudgetItem() {
+  const bs = budgetState;
+  if (bs.currentIndex >= bs.items.length) {
+    renderBudgetResults();
+    return;
+  }
+
+  const item = bs.items[bs.currentIndex];
+  const canAfford = bs.remaining >= item.cost;
+  const typeColors = { need:'var(--accent)', want:'var(--gold)', save:'var(--blue)', give:'var(--purple)' };
+  const typeLabels = { need:'Need', want:'Want', save:'Savings', give:'Giving' };
+
+  document.getElementById('budgetContent').innerHTML = `
+    <div class="budget-status">
+      <div class="budget-stat"><div class="label">Budget</div><div class="value">$${bs.budget}</div></div>
+      <div class="budget-stat"><div class="label">Remaining</div><div class="value money">$${bs.remaining}</div></div>
+      <div class="budget-stat"><div class="label">Item</div><div class="value">${bs.currentIndex + 1}/${bs.items.length}</div></div>
+    </div>
+    <div class="budget-item">
+      <div class="budget-item-header">
+        <span class="budget-item-name">${item.name}</span>
+        <span class="budget-item-cost">$${item.cost}</span>
+      </div>
+      <div class="budget-item-type" style="color:${typeColors[item.type]}">${typeLabels[item.type]}</div>
+      <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:12px;">${item.desc}</p>
+      <div class="budget-item-actions">
+        <button class="budget-buy" ${!canAfford ? 'disabled style="opacity:0.4"' : ''} onclick="budgetDecide(true)">
+          ${canAfford ? '✓ Buy' : 'Can\'t afford'}
+        </button>
+        <button class="budget-skip" onclick="budgetDecide(false)">✗ Skip</button>
+      </div>
+    </div>`;
+}
+
+function budgetDecide(buy) {
+  const item = budgetState.items[budgetState.currentIndex];
+  item.decided = true;
+  item.bought = buy;
+  if (buy) {
+    budgetState.remaining -= item.cost;
+    if (item.type === 'need') budgetState.needsCount++;
+    else if (item.type === 'want') budgetState.wantsCount++;
+    else if (item.type === 'save') budgetState.savedAmount += item.cost;
+  }
+  budgetState.currentIndex++;
+  renderBudgetItem();
+}
+
+function renderBudgetResults() {
+  const bs = budgetState;
+  const totalNeeds = bs.items.filter(i => i.type === 'need').length;
+  const boughtNeeds = bs.items.filter(i => i.type === 'need' && i.bought).length;
+  const needsPct = Math.round((boughtNeeds / totalNeeds) * 100);
+  const saved = bs.savedAmount + bs.remaining;
+
+  let grade, emoji, message;
+  if (needsPct >= 80 && saved > 0) { grade='A+'; emoji='🏆'; message='Amazing job! You covered your needs AND saved money!'; }
+  else if (needsPct >= 60) { grade='B'; emoji='⭐'; message='Good work! You handled most of your needs. Think about saving more next time.'; }
+  else { grade='C'; emoji='💪'; message='Nice try! Remember to cover needs first, then decide on wants.'; }
+
+  const prog = getProgress(state.currentProfile);
+  prog.activities.budget = { completed:true, grade, lastPlayed:Date.now() };
+  prog.coins = (prog.coins || 0) + (grade === 'A+' ? 15 : grade === 'B' ? 10 : 5);
+  saveState();
+  syncToSheets();
+
+  document.getElementById('budgetContent').innerHTML = `
+    <div class="budget-result">
+      <div class="result-emoji">${emoji}</div>
+      <h3>Grade: ${grade}</h3>
+      <p>${message}</p>
+      <p style="margin-top:10px"><strong>Needs covered:</strong> ${boughtNeeds}/${totalNeeds}</p>
+      <p><strong>Wants bought:</strong> ${bs.wantsCount}</p>
+      <p><strong>Money saved:</strong> $${saved}</p>
+      <p style="color:var(--gold); font-weight:600; margin-top:8px;">+${grade === 'A+' ? 15 : grade === 'B' ? 10 : 5} coins! 🪙</p>
+      <div style="margin-top:16px; display:flex; gap:10px; justify-content:center;">
+        <button class="btn-secondary" onclick="initBudgetGame()" style="padding:10px 20px; border-radius:var(--radius); border:1px solid var(--border); background:var(--card); color:var(--text); font-weight:600;">Play Again</button>
+        <button class="btn-primary" onclick="showScreen('activities')" style="padding:10px 20px; border-radius:var(--radius); border:none; font-weight:600;">Back</button>
+      </div>
+    </div>`;
+  spawnCoin();
+}
+
+// ═══════════════════════════════════════════════════
+// STOCK SIMULATOR
+// ═══════════════════════════════════════════════════
+
+let stockState = {};
+function initStockSim() {
+  const cash = isYounger() ? 500 : 1000;
+  stockState = {
+    cash: cash,
+    startCash: cash,
+    week: 1,
+    stocks: getStocks(),
+    portfolio: {},
+    history: []
+  };
+  renderStockSim();
+}
+
+function renderStockSim() {
+  const ss = stockState;
+  const portfolioValue = Object.entries(ss.portfolio).reduce((sum, [ticker, qty]) => {
+    const stock = ss.stocks.find(s => s.ticker === ticker);
+    return sum + (stock ? stock.price * qty : 0);
+  }, 0);
+  const totalValue = ss.cash + portfolioValue;
+  const gain = totalValue - ss.startCash;
+  const gainPct = ((gain / ss.startCash) * 100).toFixed(1);
+
+  document.getElementById('stockContent').innerHTML = `
+    <div class="portfolio-summary">
+      <div class="port-card"><div class="label">Cash</div><div class="value" style="color:var(--accent)">$${ss.cash.toFixed(2)}</div></div>
+      <div class="port-card"><div class="label">Portfolio</div><div class="value" style="color:var(--gold)">$${portfolioValue.toFixed(2)}</div></div>
+      <div class="port-card"><div class="label">Total Value</div><div class="value">$${totalValue.toFixed(2)}</div></div>
+      <div class="port-card"><div class="label">Gain/Loss</div><div class="value" style="color:${gain >= 0 ? 'var(--accent)' : 'var(--red)'}">${gain >= 0 ? '+' : ''}$${gain.toFixed(2)} (${gainPct}%)</div></div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:12px;">📅 Week ${ss.week}</p>
+    ${ss.stocks.map(s => {
+      const owned = ss.portfolio[s.ticker] || 0;
+      const change = s.lastChange || 0;
+      return `<div class="stock-card">
+        <div class="stock-top">
+          <div><span class="stock-name">${s.name}</span><br><span class="stock-ticker">${s.ticker}</span></div>
+          <div style="text-align:right">
+            <div class="stock-price">$${s.price.toFixed(2)}</div>
+            ${change !== 0 ? `<div class="stock-change ${change > 0 ? 'up' : 'down'}">${change > 0 ? '▲' : '▼'} ${Math.abs(change).toFixed(2)} (${((change/s.price)*100).toFixed(1)}%)</div>` : ''}
+          </div>
+        </div>
+        <p class="stock-desc">${s.desc}</p>
+        <div class="stock-actions">
+          <input type="number" class="stock-qty" id="qty_${s.ticker}" value="1" min="1" max="100">
+          <button class="stock-buy-btn" onclick="buyStock('${s.ticker}')">Buy</button>
+          <button class="stock-sell-btn" onclick="sellStock('${s.ticker}')" ${owned === 0 ? 'disabled style="opacity:0.3"' : ''}>Sell</button>
+        </div>
+        ${owned > 0 ? `<p class="stock-owned">You own: ${owned} shares ($${(owned * s.price).toFixed(2)})</p>` : ''}
+      </div>`;
+    }).join('')}
+    <button class="advance-btn" onclick="advanceWeek()">⏩ Advance One Week</button>
+    ${ss.week >= 12 ? `<button class="advance-btn" style="background:var(--gold); margin-top:8px;" onclick="finishStockSim()">📊 See Final Results</button>` : ''}`;
+}
+
+function buyStock(ticker) {
+  const qty = parseInt(document.getElementById('qty_' + ticker)?.value || 1);
+  const stock = stockState.stocks.find(s => s.ticker === ticker);
+  const cost = stock.price * qty;
+  if (cost > stockState.cash) { showToast('Not enough cash!'); return; }
+  stockState.cash -= cost;
+  stockState.portfolio[ticker] = (stockState.portfolio[ticker] || 0) + qty;
+  showToast(`Bought ${qty} ${ticker}!`);
+  renderStockSim();
+}
+
+function sellStock(ticker) {
+  const qty = parseInt(document.getElementById('qty_' + ticker)?.value || 1);
+  const owned = stockState.portfolio[ticker] || 0;
+  if (qty > owned) { showToast('You don\'t own that many!'); return; }
+  const stock = stockState.stocks.find(s => s.ticker === ticker);
+  stockState.cash += stock.price * qty;
+  stockState.portfolio[ticker] -= qty;
+  if (stockState.portfolio[ticker] === 0) delete stockState.portfolio[ticker];
+  showToast(`Sold ${qty} ${ticker}!`);
+  renderStockSim();
+}
+
+function advanceWeek() {
+  stockState.week++;
+  stockState.stocks.forEach(s => {
+    const change = (Math.random() - 0.45) * s.price * s.volatility; // slight upward bias
+    s.lastChange = Math.round(change * 100) / 100;
+    s.price = Math.max(1, Math.round((s.price + change) * 100) / 100);
+  });
+  renderStockSim();
+}
+
+function finishStockSim() {
+  const ss = stockState;
+  const portfolioValue = Object.entries(ss.portfolio).reduce((sum, [ticker, qty]) => {
+    const stock = ss.stocks.find(s => s.ticker === ticker);
+    return sum + (stock ? stock.price * qty : 0);
+  }, 0);
+  const total = ss.cash + portfolioValue;
+  const gain = total - ss.startCash;
+  const gainPct = ((gain / ss.startCash) * 100).toFixed(1);
+
+  const prog = getProgress(state.currentProfile);
+  prog.activities.stocks = { completed:true, finalValue:total, gain:gain.toFixed(2), weeks:ss.week, lastPlayed:Date.now() };
+  prog.coins = (prog.coins || 0) + (gain > 0 ? 15 : 5);
+  saveState();
+  syncToSheets();
+
+  document.getElementById('stockContent').innerHTML = `
+    <div class="budget-result">
+      <div class="result-emoji">${gain > 0 ? '📈' : '📉'}</div>
+      <h3>${gain > 0 ? 'You Made Money!' : 'You Lost Money'}</h3>
+      <p>After ${ss.week} weeks of trading:</p>
+      <p><strong>Started with:</strong> $${ss.startCash}</p>
+      <p><strong>Ended with:</strong> $${total.toFixed(2)}</p>
+      <p style="color:${gain >= 0 ? 'var(--accent)' : 'var(--red)'}; font-weight:700; font-size:1.1rem;">
+        ${gain >= 0 ? '+' : ''}$${gain.toFixed(2)} (${gainPct}%)
+      </p>
+      <p style="font-size:0.85rem; color:var(--text-dim); margin-top:10px;">
+        ${gain > 0 ? 'Great instincts! Remember, real investing is about patience and diversification.' : 'Don\'t worry — even the pros lose sometimes. The key lesson is diversification and patience!'}
+      </p>
+      <p style="color:var(--gold); font-weight:600; margin-top:8px;">+${gain > 0 ? 15 : 5} coins! 🪙</p>
+      <div style="margin-top:16px; display:flex; gap:10px; justify-content:center;">
+        <button class="btn-secondary" onclick="initStockSim()" style="padding:10px 20px; border-radius:var(--radius); border:1px solid var(--border); background:var(--card); color:var(--text); font-weight:600;">Play Again</button>
+        <button class="btn-primary" onclick="showScreen('activities')" style="padding:10px 20px; border-radius:var(--radius); border:none; font-weight:600;">Back</button>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// SAVINGS GOAL TRACKER
+// ═══════════════════════════════════════════════════
+
+function initSavingsGoal() {
+  const prog = getProgress(state.currentProfile);
+  if (!prog.activities.savingsGoal) {
+    renderSavingsSetup();
+  } else {
+    renderSavingsProgress();
+  }
+}
+
+function renderSavingsSetup() {
+  document.getElementById('savingsContent').innerHTML = `
+    <div class="goal-setup">
+      <p style="font-size:1rem; margin-bottom:16px;">What are you saving for?</p>
+      <div class="goal-input-group">
+        <label>Goal Name</label>
+        <input class="goal-input" id="goalName" placeholder="e.g., New bike, Video game">
+      </div>
+      <div class="goal-input-group">
+        <label>How much do you need? ($)</label>
+        <input class="goal-input" id="goalAmount" type="number" placeholder="50" min="1">
+      </div>
+      <div class="goal-input-group">
+        <label>How much can you save per week? ($)</label>
+        <input class="goal-input" id="goalWeekly" type="number" placeholder="5" min="1">
+      </div>
+      <button class="btn-primary" style="padding:14px 32px; border-radius:var(--radius); border:none; font-size:1rem; font-weight:600; margin-top:16px;" onclick="createSavingsGoal()">
+        Start Saving! 🎯
+      </button>
+    </div>`;
+}
+
+function createSavingsGoal() {
+  const name = document.getElementById('goalName').value.trim();
+  const amount = parseFloat(document.getElementById('goalAmount').value) || 0;
+  const weekly = parseFloat(document.getElementById('goalWeekly').value) || 0;
+  if (!name || amount <= 0 || weekly <= 0) { showToast('Please fill in all fields!'); return; }
+
+  const prog = getProgress(state.currentProfile);
+  prog.activities.savingsGoal = { name, target:amount, saved:0, weekly, created:Date.now() };
+  saveState();
+  syncToSheets();
+  renderSavingsProgress();
+}
+
+function renderSavingsProgress() {
+  const prog = getProgress(state.currentProfile);
+  const goal = prog.activities.savingsGoal;
+  const pct = Math.min(100, Math.round((goal.saved / goal.target) * 100));
+  const weeksLeft = Math.ceil((goal.target - goal.saved) / goal.weekly);
+  const done = goal.saved >= goal.target;
+
+  document.getElementById('savingsContent').innerHTML = `
+    <div class="goal-visual">
+      <p style="font-size:1.1rem; font-weight:600; margin-bottom:4px;">${goal.name}</p>
+      <div class="goal-jar">
+        <div class="goal-jar-fill" style="height:${pct}%"></div>
+        <div class="goal-jar-label">${pct}%</div>
+      </div>
+      <div class="goal-amount-display">$${goal.saved.toFixed(2)} / $${goal.target.toFixed(2)}</div>
+      ${done
+        ? '<p style="color:var(--gold); font-weight:700; font-size:1.1rem;">🎉 Goal Reached!</p>'
+        : `<p style="color:var(--text-dim); font-size:0.88rem;">~${weeksLeft} weeks to go at $${goal.weekly}/week</p>`
+      }
+    </div>
+    ${!done ? `
+    <p style="font-size:0.9rem; font-weight:600; margin-bottom:8px; text-align:center;">Add to your savings:</p>
+    <div class="goal-add-group">
+      <button class="goal-add-btn" onclick="addSavings(1)">+ $1</button>
+      <button class="goal-add-btn" onclick="addSavings(5)">+ $5</button>
+      <button class="goal-add-btn" onclick="addSavings(10)">+ $10</button>
+      <button class="goal-add-btn" onclick="addSavings(${goal.weekly})">+ $${goal.weekly} (weekly)</button>
+    </div>` : ''}
+    <button class="btn-secondary" onclick="resetSavingsGoal()" style="width:100%; padding:12px; border-radius:var(--radius); border:1px solid var(--border); background:var(--card); color:var(--text-dim); font-weight:600; margin-top:20px;">
+      ${done ? 'Set New Goal 🎯' : 'Change Goal'}
+    </button>`;
+}
+
+function addSavings(amount) {
+  const prog = getProgress(state.currentProfile);
+  prog.activities.savingsGoal.saved = Math.min(
+    prog.activities.savingsGoal.target,
+    prog.activities.savingsGoal.saved + amount
+  );
+  prog.coins = (prog.coins || 0) + 2;
+  saveState();
+  syncToSheets();
+  renderSavingsProgress();
+  spawnCoin();
+  if (prog.activities.savingsGoal.saved >= prog.activities.savingsGoal.target) {
+    showToast('🎉 You reached your goal!');
+  }
+}
+
+function resetSavingsGoal() {
+  const prog = getProgress(state.currentProfile);
+  delete prog.activities.savingsGoal;
+  saveState();
+  renderSavingsSetup();
+}
+
+// ═══════════════════════════════════════════════════
+// PARENT VIEW
+// ═══════════════════════════════════════════════════
+
+let parentViewKid = null;
+function renderParentView() {
+  if (!parentViewKid && state.profiles.length > 0) parentViewKid = state.profiles[0].id;
+
+  document.getElementById('kidTabBar').innerHTML = state.profiles.map(p => `
+    <button class="kid-tab ${parentViewKid === p.id ? 'active' : ''}" onclick="parentViewKid='${p.id}'; renderParentView();">
+      ${p.emoji} ${p.name}
+    </button>
+  `).join('');
+
+  const prog = getProgress(parentViewKid);
+  const profile = getProfile(parentViewKid);
+  const completedLessons = LESSONS.filter(l => prog.lessons[l.id]?.completed);
+  const totalQuizPct = completedLessons.length > 0
+    ? Math.round(completedLessons.reduce((s, l) => s + (prog.lessons[l.id]?.quizScore || 0), 0) / completedLessons.length)
+    : 0;
+
+  const relevantPrompts = DISCUSSION_PROMPTS.filter(dp => {
+    return completedLessons.some(l => l.id === dp.forLesson);
+  });
+  const upcomingPrompts = DISCUSSION_PROMPTS.filter(dp => {
+    return !completedLessons.some(l => l.id === dp.forLesson);
+  }).slice(0, 2);
+
+  document.getElementById('parentContent').innerHTML = `
+    <div class="parent-stat-grid">
+      <div class="parent-stat">
+        <div class="stat-value">${completedLessons.length}/${LESSONS.length}</div>
+        <div class="stat-label">Lessons Done</div>
+      </div>
+      <div class="parent-stat">
+        <div class="stat-value">${totalQuizPct}%</div>
+        <div class="stat-label">Avg Quiz Score</div>
+      </div>
+      <div class="parent-stat">
+        <div class="stat-value">${prog.streak || 0}</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+      <div class="parent-stat">
+        <div class="stat-value">${prog.coins || 0}</div>
+        <div class="stat-label">Coins Earned</div>
+      </div>
+    </div>
+
+    <p class="section-title">Completed Lessons</p>
+    ${completedLessons.length > 0 ? completedLessons.map(l => `
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <span>${l.emoji} ${l.title}</span>
+        <span style="color:var(--gold); font-weight:600;">${prog.lessons[l.id]?.quizScore || 0}%</span>
+      </div>
+    `).join('') : '<p style="color:var(--text-dim); font-size:0.9rem;">No lessons completed yet.</p>'}
+
+    <p class="section-title">Activity Results</p>
+    ${prog.activities.budget ? `<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:8px;">
+      💳 Budget Challenge — Grade: <strong>${prog.activities.budget.grade}</strong>
+    </div>` : ''}
+    ${prog.activities.stocks ? `<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:8px;">
+      📈 Stock Sim — ${parseFloat(prog.activities.stocks.gain) >= 0 ? 'Gained' : 'Lost'}: <strong>$${Math.abs(prog.activities.stocks.gain)}</strong> over ${prog.activities.stocks.weeks} weeks
+    </div>` : ''}
+    ${prog.activities.savingsGoal ? `<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:8px;">
+      🏦 Savings: <strong>$${prog.activities.savingsGoal.saved.toFixed(2)}</strong> / $${prog.activities.savingsGoal.target} for "${prog.activities.savingsGoal.name}"
+    </div>` : ''}
+    ${!prog.activities.budget && !prog.activities.stocks && !prog.activities.savingsGoal ? '<p style="color:var(--text-dim); font-size:0.9rem;">No activities completed yet.</p>' : ''}
+
+    <p class="section-title">💬 Discussion Prompts</p>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:10px;">Use these to review what ${profile?.name || 'they'} learned together:</p>
+    ${(relevantPrompts.length > 0 ? relevantPrompts : upcomingPrompts).map(dp => `
+      <div class="discussion-card">
+        <div class="disc-topic">${dp.topic}</div>
+        <div class="disc-prompt">${dp.prompt}</div>
+        <div class="disc-age">Based on: ${LESSONS.find(l => l.id === dp.forLesson)?.title || ''}</div>
+      </div>
+    `).join('')}
+
+    <button class="btn-secondary" onclick="switchProfile()" style="width:100%; padding:12px; border-radius:var(--radius); border:1px solid var(--border); background:var(--card); color:var(--text); font-weight:600; margin-top:16px;">
+      ← Back to Profiles
+    </button>`;
+}
+
+// ═══════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════
+
+function renderSettings() {
+  document.getElementById('syncUrlInput').value = state.syncUrl || '';
+  document.getElementById('profileSettings').innerHTML = state.profiles.map(p => `
+    <div class="setting-row">
+      <span>${p.emoji}</span>
+      <input class="setting-input" style="width:35%" value="${p.name}" onchange="updateProfileName('${p.id}', this.value)">
+      <input class="setting-input" style="width:20%" type="number" value="${p.age}" onchange="updateProfileAge('${p.id}', this.value)">
+    </div>
+  `).join('');
+}
+
+function updateProfileName(id, name) {
+  const p = getProfile(id);
+  if (p) { p.name = name; saveState(); }
+}
+
+function updateProfileAge(id, age) {
+  const p = getProfile(id);
+  if (p) { p.age = parseInt(age) || 9; saveState(); }
+}
+
+function saveSyncUrl() {
+  state.syncUrl = document.getElementById('syncUrlInput').value.trim();
+  saveState();
+  if (state.syncUrl) {
+    syncToSheets();
+    showToast('Settings saved! Syncing...');
+  } else {
+    showToast('URL cleared');
+  }
+}
+
+function confirmReset() {
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  document.getElementById('modalBox').innerHTML = `
+    <h3>⚠️ Reset All Progress?</h3>
+    <p>This will clear all lesson progress, quiz scores, and activity data for everyone.</p>
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+      <button class="btn-secondary" onclick="document.getElementById('modalOverlay').classList.add('hidden')" style="padding:10px 20px; border-radius:var(--radius); border:1px solid var(--border); background:var(--card); color:var(--text); font-weight:600;">Cancel</button>
+      <button class="btn-primary" style="background:var(--red); padding:10px 20px; border-radius:var(--radius); border:none; font-weight:600;" onclick="resetAll()">Reset</button>
+    </div>`;
+}
+
+function resetAll() {
+  state.progress = {};
+  saveState();
+  document.getElementById('modalOverlay').classList.add('hidden');
+  showToast('All progress reset');
+  renderSettings();
+}
+
+// ═══════════════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ═══════════════════════════════════════════════════
+
+async function syncToSheets() {
+  if (!state.syncUrl) return;
+  try {
+    document.getElementById('syncStatusText').textContent = 'Syncing...';
+    const payload = {
+      action: 'sync',
+      profiles: state.profiles,
+      progress: state.progress,
+      lastSync: Date.now()
+    };
+    const resp = await fetch(state.syncUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (data.success) {
+      // Merge remote progress if it's newer
+      if (data.progress) {
+        Object.keys(data.progress).forEach(pid => {
+          const remote = data.progress[pid];
+          const local = state.progress[pid];
+          if (!local) { state.progress[pid] = remote; }
+          // Simple merge: keep whichever has more completed lessons
+        });
+        saveState();
+      }
+      document.getElementById('syncStatusText').textContent = `✅ Synced ${new Date().toLocaleTimeString()}`;
+    } else {
+      document.getElementById('syncStatusText').textContent = '❌ Sync failed';
+    }
+  } catch(e) {
+    document.getElementById('syncStatusText').textContent = '❌ Connection error';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function spawnCoin() {
+  const coin = document.createElement('div');
+  coin.className = 'coin-anim';
+  coin.textContent = '🪙';
+  coin.style.left = (Math.random() * 60 + 20) + '%';
+  coin.style.top = '50%';
+  document.body.appendChild(coin);
+  setTimeout(() => coin.remove(), 700);
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+
+loadState();
+renderProfileScreen();
+
+// Auto-enter if profile was previously selected
+if (state.currentProfile && !state.parentMode) {
+  enterApp();
+} else if (state.parentMode) {
+  enterParentMode();
+}
+
+// Service worker registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

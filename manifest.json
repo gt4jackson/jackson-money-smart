@@ -1,0 +1,23 @@
+{
+  "name": "Money Smart — Jackson Family",
+  "short_name": "Money Smart",
+  "description": "Learn about earning, saving, and investing money!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0c1222",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23064e3b'/><text x='256' y='340' font-size='260' text-anchor='middle'>💰</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23064e3b'/><text x='256' y='340' font-size='260' text-anchor='middle'>💰</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
